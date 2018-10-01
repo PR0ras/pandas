@@ -56,8 +56,6 @@ void Analysis(float Vx,float Vy,float Vz)
 //	PRINTF("Target_1=%d ",Target_1);
 //	PRINTF("Target_2=%d ",Target_2);
 //	PRINTF("Target_3=%d ",Target_3);
-//	PRINTF("lk=%d ",lk);
-	
 	CAN_RoboModule_DRV_Velocity_Mode(1,5000,Target_1);
 	CAN_RoboModule_DRV_Velocity_Mode(2,5000,Target_2);
 	CAN_RoboModule_DRV_Velocity_Mode(3,5000,Target_3);
