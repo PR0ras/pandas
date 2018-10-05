@@ -4,6 +4,7 @@
 #include "fsl_debug_console.h"
 #include "clock_config.h"
 #include "pin_mux.h"
+#include "bsp_key.h"
 
 /* Select 80M clock divformatd by USB1 PLL (480 MHz) as master flexcan clock source */
 #define FLEXCAN_CLOCK_SOURCE_SELECT (2U)
@@ -21,6 +22,14 @@ uint32_t rxformatntifier;
 volatile bool txComplete = false;
 volatile bool rxComplete = false;
 flexcan_mb_transfer_t txXfer, rxXfer;
+void my_canInit()
+{
+		flexcanInit();
+		CAN_RoboModule_DRV_Reset(0); 
+		delay_ms(500);
+		CAN_RoboModule_DRV_Mode_Choice(0,Velocity_Mode);
+		delay_ms(200);
+}
 
 void flexcanInit(void)
 {

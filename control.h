@@ -5,4 +5,6 @@
 void Analysis(float Vx,float Vy,float Vz);
 void move(int32_t target_1,int32_t target_2,int32_t target_3,int16_t tt);
 void updateWD(void);
+void aaa(float x,float y);
+
 #endif

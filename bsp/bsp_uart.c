@@ -39,13 +39,13 @@ void uart_Init(void)
 	config.txFifoWatermark = 0;
 	config.rxFifoWatermark = 0;
 	LPUART_Init(LPUART5, &config, BOARD_DEBUG_UART_CLK_FREQ);
-	LPUART_WriteBlocking(LPUART5, g_tipString, sizeof(g_tipString)-1);
+	//LPUART_WriteBlocking(LPUART5, g_tipString, sizeof(g_tipString)-1);
 	LPUART_EnableInterrupts(LPUART5, kLPUART_RxDataRegFullInterruptEnable);
 	RT1052_NVIC_SetPriority(LPUART5_IRQn,5,0);
 	EnableIRQ(LPUART5_IRQn);
-	LPUART_EnableInterrupts(LPUART1, kLPUART_RxDataRegFullInterruptEnable);
+	//LPUART_EnableInterrupts(LPUART1, kLPUART_RxDataRegFullInterruptEnable);
 	//RT1052_NVIC_SetPriority(LPUART1_IRQn,5,0);
-	EnableIRQ(LPUART1_IRQn);
+	//EnableIRQ(LPUART1_IRQn);
 }
 
 void DEMO_LPUART_IRQHandler(void)
@@ -111,28 +111,29 @@ void DEMO_LPUART_IRQHandler(void)
 				rxindex=0;
 				break; 
 			}
+		
+		
 		}
 }
 
 void LPUART1_IRQHandler(void)
 {
-	if ((kLPUART_RxDataRegFullFlag)&&LPUART_GetStatusFlags(LPUART1))
-		data=LPUART_ReadByte(LPUART1);
-	LPUART_WriteByte(LPUART5,data);
-	
-	 lpuartrx[datainx++]=data;
-	if(datainx>=8)
-	{
-		rxflag1=1;
-		datainx=0;
-	}
+//	if ((kLPUART_RxDataRegFullFlag)&&LPUART_GetStatusFlags(LPUART1))
+//		data=LPUART_ReadByte(LPUART1);
+//	LPUART_WriteByte(LPUART5,data);
+//	
+//	 lpuartrx[datainx++]=data;
+//	if(datainx>=8)
+//	{
+//		rxflag1=1;
+//		datainx=0;
+//	}
 }
 
 void END_SEND(void)
 {
-	delay_ms(2);
 	LPUART_WriteByte(LPUART1,0xff);
 	LPUART_WriteByte(LPUART1,0xff);
 	LPUART_WriteByte(LPUART1,0xff);
-	delay_ms(2);
+	//delay_ms(5);
 }
