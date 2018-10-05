@@ -25,7 +25,7 @@
 	int32_t move_x,move_y,move_z,move_v,t_0;
 	uint16_t run_node=0,roa_node=0;
 	extern uint32_t sec;	
-	uint16_t gear=1000;
+	uint16_t gear=2000;
 	float vx,vy,vz;
 	float vx_o=0,vy_o=0,vz_o=0;
 	int32_t height=0,d_height=0,height_o=0;
@@ -145,60 +145,23 @@ int main(void)
 	{
 		
 	aaa(DST_X[run_node],DST_Y[run_node]);
-		switch(run_node)//需要旋转的点
+		switch(run_node)//需要停止的点
 			{
-				case 1:
-					if(once)
-					{
-						vz=60;
-						once=0;
-					}
-					if(threshould_z(zangle,DST_Z[run_node]))
-						vz=0;
+				case 0:
+					vz=0;
 					break;
-				case 3:
-					if(once)
-					{
-						vz=60.0;
-						once=0;
-					}
-					if(threshould_z(zangle,DST_Z[run_node]))
-						vz=0;
-					break;
-				case 4:
-					if(once)
-					{
-						vz=60.0;
-						once=0;
-					}
-					if(threshould_z(zangle,DST_Z[run_node]))
-						vz=0;
-					break;
-				case 5:
-					if(once)
-					{
-						vz=60.0;
-						once=0;
-					}
-					if(threshould_z(zangle,DST_Z[run_node]))
-						vz=0;
-					break;
-				case 9:
-					if(once)
-					{
-						vz=60.0;
-						once=0;
-					}
-					if(threshould_z(zangle,DST_Z[run_node]))
-						vz=0;
-					break;
-				case 6:
-					vx=0;
-					vy=0;
+				case 2:
 					vz=0;
 					break;
 				default :
-					vz=0;
+					if(once)
+					{
+						vz=60.0;
+						once=0;
+					}
+					if(threshould_z(zangle,DST_Z[run_node]))
+						vz=0;
+					break;
 			}
 		if(threshould_xy(wd_x,DST_X[run_node])&&threshould_xy(wd_y,DST_Y[run_node]))
 		{
