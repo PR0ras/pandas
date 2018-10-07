@@ -62,10 +62,20 @@ void yigedunzi()
 {
 	if(!thrice)
 	{
+		if(once)
+		{
+			now_time = sec;
+			once=0;
+		}
+		if(threshould_s(sec,now_time + 500))//延时500ms
+		{
 		once=1;
 		twice=1;
 		run_node++;	
-	}
+		}
+		else
+		aaa(DST_X[run_node-1],DST_Y[run_node-1]);
+	}//回退一点
 	else
 	{
 		if(!twice&&thrice)
@@ -89,11 +99,20 @@ void lianggedunzi()
 {
 	if(!thrice)
 	{
+		if(once)
+		{
+			now_time = sec;
+			once=0;
+		}
+		if(threshould_s(sec,now_time + 500))//延时500ms
+		{
 		once=1;
 		twice=1;
-		thrice=1;
 		run_node++;	
-	}
+		}
+		else
+		aaa(DST_X[run_node-1],DST_Y[run_node-1]);
+	}//回退一点
 	else
 	{
 		if(!twice&&thrice)
@@ -206,10 +225,6 @@ rxff=1;
           g_KeyDown[CORE_BOARD_MODE_KEY_ID] = false; 
 	 }
 			
-
-
-				
-
 //	if(threshould_s(sec,2000))
 //		run_node=1;
 //	if(threshould_s(sec,9000))
@@ -261,151 +276,24 @@ rxff=1;
 			switch(run_node)//暂停动作
 			{
 				case 4:
-					if(twice)
-						{
-							now_time = sec;
-						}
-						if(threshould_s(sec,now_time + DST_S[4]))
-						{
-							once=1;
-							twice=1;
-							run_node++;	
-						}
-						else
-						{
-							if(!twice)
-							{
-								change_height(50000);
-								delay_ms(1000);
-								change_height(90000);
-								delay_ms(1000);
-								change_height(150000);
-								delay_ms(1000);						
-							}
-							
-							vx=0;
-							vy=0;
-							vz=0;
-							twice=0;
-						}
+					yigedunzi();
 					break;
 				case 5:
-					if(twice)
-						{
-							now_time = sec;
-						}
-						if(threshould_s(sec,now_time + DST_S[4]))
-						{
-							once=1;
-							twice=1;
-							run_node++;	
-						}
-						else
-						{
-							if(!twice)
-							{
-								change_height(50000);
-								delay_ms(1000);
-								change_height(90000);
-								delay_ms(1000);
-								change_height(150000);
-								delay_ms(1000);						
-							}
-							
-							vx=0;
-							vy=0;
-							vz=0;
-							twice=0;
-						}
+					yigedunzi();
 					break;
 				case 6:
-					if(twice)
-						{
-							now_time = sec;
-						}
-						if(threshould_s(sec,now_time + DST_S[4]))
-						{
-							once=1;
-							twice=1;
-							run_node++;	
-						}
-						else
-						{
-							if(!twice)
-							{
-								change_height(50000);
-								delay_ms(1000);
-								change_height(130000);
-								delay_ms(1000);
-								change_height(150000);
-								delay_ms(1000);						
-							}
-							
-							vx=0;
-							vy=0;
-							vz=0;
-							twice=0;
-						}
+					lianggedunzi();
 					break;
 				case 7:
-					if(twice)
-						{
-							now_time = sec;
-						}
-						if(threshould_s(sec,now_time + DST_S[4]))
-						{
-							once=1;
-							twice=1;
-							run_node++;	
-						}
-						else
-						{
-							if(!twice)
-							{
-								change_height(50000);
-								delay_ms(1000);
-								change_height(130000);
-								delay_ms(1000);
-								change_height(150000);
-								delay_ms(1000);						
-							}
-							
-							vx=0;
-							vy=0;
-							vz=0;
-							twice=0;
-						}
+					lianggedunzi();
 					break;
 				case 9:
-					if(twice)
-						{
-							now_time = sec;
-						}
-						if(threshould_s(sec,now_time + DST_S[4]))
-						{
-							twice=1;
-							run_node++;	
-						}
-						else
-						{
-							if(!twice)
-							{
-								change_height(50000);
-								delay_ms(1000);
-								change_height(130000);
-								delay_ms(1000);
-								change_height(150000);
-								delay_ms(1000);						
-							}
-							vx=0;
-							vy=0;
-							vz=0;
-							twice=0;
-						}
+					lianggedunzi();
 					break;
 				default :
 					once=1;
 					twice=1;
+					thrice=1;
 					run_node++;
 			}
 			
