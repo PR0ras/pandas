@@ -41,7 +41,7 @@
 	extern float w_z;
 	extern float wd_x,wd_y;
 	extern uint8_t rxflag,rxflag1,data;
-	uint8_t once=1,twice=1,onceaaa=1;
+	uint8_t once=1,twice=1,thrice=1;
 	float px,py,pz;
 	static float
 		  DST_X[100]={ -1376.0 , -2327.0 , -3613.0 , -4166.0 ,-3335.0 ,-1416.0 ,	-452,	1244,	1771,	-245},
@@ -60,11 +60,7 @@
   */
 void yigedunzi()
 {
-if(twice)
-	{
-		now_time = sec;
-	}
-	if(threshould_s(sec,now_time + DST_S[4]))
+	if(!thrice)
 	{
 		once=1;
 		twice=1;
@@ -72,14 +68,15 @@ if(twice)
 	}
 	else
 	{
-		if(!twice)
+		if(!twice&&thrice)
 		{
 			change_height(50000);
 			delay_ms(1000);
 			change_height(90000);
 			delay_ms(1000);
 			change_height(150000);
-			delay_ms(1000);						
+			delay_ms(1000);	
+			thrice=0;			
 		}
 		twice=0;
 		vx=0;
@@ -90,26 +87,24 @@ if(twice)
 
 void lianggedunzi()
 {
-if(twice)
-	{
-		now_time = sec;
-	}
-	if(threshould_s(sec,now_time + DST_S[4]))
+	if(!thrice)
 	{
 		once=1;
 		twice=1;
+		thrice=1;
 		run_node++;	
 	}
 	else
 	{
-		if(!twice)
+		if(!twice&&thrice)
 		{
 			change_height(50000);
 			delay_ms(1000);
 			change_height(130000);
 			delay_ms(1000);
 			change_height(150000);
-			delay_ms(1000);						
+			delay_ms(1000);		
+			thrice=0;
 		}
 		twice=0;
 		vx=0;
