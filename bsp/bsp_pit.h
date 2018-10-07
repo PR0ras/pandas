@@ -9,5 +9,5 @@
 #include "fsl_pit.h"
 
 void PIT_CH0_Int_Init(uint32_t ldval);
-void change_hight(int32_t temp);
+void change_height(int32_t temp);
 #endif

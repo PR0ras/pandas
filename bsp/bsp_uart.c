@@ -78,7 +78,7 @@ void DEMO_LPUART_IRQHandler(void)
 					rxindex++;//Êý¾ÝË÷Òý
 				}
 				else if(data == 0x0d)
-					rxindex = 0;
+					rxindex = 1;
 				else
 					rxindex = 0;
 				break;
@@ -111,8 +111,6 @@ void DEMO_LPUART_IRQHandler(void)
 				rxindex=0;
 				break; 
 			}
-		
-		
 		}
 }
 

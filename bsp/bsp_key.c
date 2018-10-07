@@ -1,15 +1,14 @@
 #include "fsl_iomuxc.h"
 #include "fsl_gpio.h" 
 #include "bsp_key.h"
-volatile uint8_t key=0;
-	
+
 void KEY_Init(void)
 {
 		gpio_pin_config_t key_config;
 	
 	//IO功能设置
 	IOMUXC_SetPinMux(IOMUXC_SNVS_WAKEUP_GPIO5_IO00,0);	        //SNVS_WAKEUP配置为ALT5,即GPIO5_00
-    IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_05_GPIO1_IO05,0);	    //GPIO_AD_B0_05配置为ALT5,即GPIO1_IO05
+  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_05_GPIO1_IO05,0);	    //GPIO_AD_B0_05配置为ALT5,即GPIO1_IO05
 	IOMUXC_SetPinConfig(IOMUXC_SNVS_WAKEUP_GPIO5_IO00,0xF080);      
 	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_05_GPIO1_IO05,0xF080);    
 	key_config.direction=kGPIO_DigitalInput;	//输入
@@ -18,14 +17,11 @@ void KEY_Init(void)
 	GPIO_PinInit(GPIO5,0,&key_config); 			//初始化GPIO5_00 
     
    //KEY0默认电平设置
-    key_config.direction=kGPIO_DigitalInput;	//输入
+   key_config.direction=kGPIO_DigitalInput;	//输入
 	key_config.interruptMode=kGPIO_NoIntmode;	//不使用中断功能
 	key_config.outputLogic=1;					//默认高电平
 	GPIO_PinInit(GPIO1,5,&key_config); 			//初始化GPIO1_05
-	EnableIRQ(GPIO5_Combined_0_15_IRQn);
-	EnableIRQ(GPIO1_Combined_0_15_IRQn);
-	GPIO_PortEnableInterrupts(GPIO1,1U<<5U);
-	GPIO_PortEnableInterrupts(GPIO5,1U<<0U);
+	
 }
 
 uint8_t KEY_Scan(uint8_t mode)
@@ -56,28 +52,4 @@ void delay_ms(uint32_t count)
 			{			
 					__asm("NOP"); /* 调用nop空指令 */
 			}
-}
-
-void GPIO5_Combined_0_15_IRQHandler(void)//WK_UP按键GPIO5_00
-{ 
-    /* clear the interrupt status */
-    GPIO_PortClearInterruptFlags(GPIO5, 1U << 0U);
-    /* Change state of switch. */
-   key= WKUP_PRES;
-
-#if defined __CORTEX_M && (__CORTEX_M == 4U)
-    __DSB();
-#endif
-}
-
-void GPIO1_Combined_0_15_IRQHandler(void)//KEY0按键GPIO1_05
-{ 
-    /* clear the interrupt status */
-    GPIO_PortClearInterruptFlags(GPIO5, 1U << 5U);
-    /* Change state of switch. */
-    key = KEY0_PRES;
-	
-#if defined __CORTEX_M && (__CORTEX_M == 4U)
-    __DSB();
-#endif
 }

@@ -129,7 +129,7 @@ void aaa(float x,float y)
 		if((abs(err_x)+abs(err_y))>200.0)
 		{
 			index=0.0;
-			gear=2000;
+			gear=1000;
 		}
 		else if(((abs(err_x)+abs(err_y))>50.0)&&((abs(err_x)+abs(err_y))<100.0))
 		{
