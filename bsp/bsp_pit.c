@@ -5,7 +5,7 @@
 extern float vx,vy,vz;
 
  int32_t count_stop;
-	volatile uint32_t sec=0;	
+	 uint32_t sec=0;	
 	pit_config_t pit_config;
 void PIT_CH0_Int_Init(uint32_t ldval)
 {
