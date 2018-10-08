@@ -45,7 +45,7 @@ uint8_t KEY_Scan(uint8_t mode)
 
 void delay_ms(uint32_t count)
 {
-    volatile uint32_t i = 0;
+    static  uint32_t i = 0;
 		uint32_t j=0;
 		for(j=0;j<100000;++j)
 			for (i = 0; i < count; ++i)

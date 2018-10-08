@@ -8,7 +8,8 @@ extern float pos_x;
 extern float pos_y;
 extern float zangle;
 extern float vx,vy,vz;
-extern uint16_t gear;
+extern uint16_t gear0;
+uint16_t gear=0;
 float wd1_x=0.0,wd1_y=0.0,kx=129.8,bx=0.0,ky=-129.9,by=130.0,wd_x=0,wd_y=0;
 uint8_t Flag_Target,Flag_Change;                             //相关标志位
 uint8_t temp1;                                               //临时变量
@@ -129,17 +130,17 @@ void aaa(float x,float y)
 		if((abs(err_x)+abs(err_y))>200.0)
 		{
 			index=0.0;
-			gear=1000;
+			gear=gear0;
 		}
 		else if(((abs(err_x)+abs(err_y))>50.0)&&((abs(err_x)+abs(err_y))<100.0))
 		{
 			index=0.0;
-			gear=(abs(err_x)+abs(err_y))+500.0;
+			gear=(abs(err_x)+abs(err_y))+gear0/2;
 		}
 		else if((abs(err_x)+abs(err_y))<25.0)
 		{
 			index=1.0;
-			gear=(abs(err_x)+abs(err_y))*2;
+			gear=(abs(err_x)+abs(err_y))*40;
 		}		
 		
 		err_x=x-wd_x ;               
