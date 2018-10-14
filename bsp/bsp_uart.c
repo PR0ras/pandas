@@ -39,6 +39,7 @@ void uart_Init(void)
 	config.txFifoWatermark = 0;
 	config.rxFifoWatermark = 0;
 	LPUART_Init(LPUART5, &config, BOARD_DEBUG_UART_CLK_FREQ);
+	LPUART_Init(LPUART3, &config, BOARD_DEBUG_UART_CLK_FREQ);
 	//LPUART_WriteBlocking(LPUART5, g_tipString, sizeof(g_tipString)-1);
 	LPUART_EnableInterrupts(LPUART5, kLPUART_RxDataRegFullInterruptEnable);
 	RT1052_NVIC_SetPriority(LPUART5_IRQn,5,0);

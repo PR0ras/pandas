@@ -2,7 +2,15 @@
 #include "arm_math.h"
 #include "bsp_flexcan.h"
 #include "fsl_debug_console.h"
-
+#include "fsl_lpuart.h"
+#define threshould_x(a,b) ((a>b-7)&&(a<b+7))
+#define threshould_y(a,b) ((a>b-7)&&(a<b+7))
+#define X_PARAMETER          (0.5f)               
+#define Y_PARAMETER           (sqrt(3)/2.f)      
+#define L_PARAMETER           (1364.0f)  
+#define Kxy_mm                (217.2996f)
+#define k_Vz									(20.38f)//(13.66f)
+ 
 extern  float ax,ay,rx,ry,juli,jdc;
 extern float pos_x;
 extern float pos_y;
@@ -12,18 +20,16 @@ extern uint16_t gear0;
 uint16_t gear=0;
 float wd1_x=0.0,wd1_y=0.0,kx=129.8,bx=0.0,ky=-129.9,by=130.0,wd_x=0,wd_y=0;
 uint8_t Flag_Target,Flag_Change;                             //相关标志位
-uint8_t temp1;                                               //临时变量
+uint8_t temp1,dja[7]={0x0d,0x0a,0x00,0x00,0x00,0x0a,0x0d};  //临时变量
 float Voltage_Count,Voltage_All;  //电压采样相关变量
 float Gyro_K=0.004;       //陀螺仪比例系数
-#define X_PARAMETER          (0.5f)               
-#define Y_PARAMETER           (sqrt(3)/2.f)      
-#define L_PARAMETER           (1364.0f)  
-#define Kxy_mm                (217.2996f)
-#define k_Vz									(20.38f)//(13.66f)
+
 void updateWD(void)
 {
-	wd_x=pos_x-(arm_sin_f32(zangle*PI/180)*kx+bx);
-	wd_y=pos_y-(arm_cos_f32(zangle*PI/180)*ky+by);
+//	wd_x=pos_x-(arm_sin_f32(zangle*PI/180)*kx+bx);
+//	wd_y=pos_y-(arm_cos_f32(zangle*PI/180)*ky+by);
+	wd_x=-pos_x;
+	wd_y=-pos_y;
 }
 /**************************************************************************
 函数功能：小车运动数学模型
@@ -67,57 +73,11 @@ void Analysis(float Vx,float Vy,float Vz)
 	Target_1   = (int32_t)(Lx + k_Vz*Vz);//+gyroz*Gyro_K;
 	Target_2   = (int32_t)(-X_PARAMETER*Lx + Y_PARAMETER*Ly + k_Vz*Vz);//+gyroz*Gyro_K;
 	Target_3   = (int32_t)(-X_PARAMETER*Lx - Y_PARAMETER*Ly + k_Vz*Vz);//+gyroz*Gyro_K;
-	
-//	PRINTF("Vx=%f ",Vx);
-//	PRINTF("Vy=%f ",Vy);
-//	PRINTF("dx=%f ",dx);
-//	PRINTF("dy=%f ",dy);
-//	PRINTF("COS=%f ",arm_cos_f32(rad));
-//	PRINTF("SIN=%f ",arm_sin_f32(rad));
-//	PRINTF("Lx=%f ",Lx);
-//	PRINTF("Ly=%f ",Ly);
-//	PRINTF("Target_1=%d ",Target_1);
-//	PRINTF("Target_2=%d ",Target_2);
-//	PRINTF("Target_3=%d ",Target_3);
+
 	CAN_RoboModule_DRV_Velocity_Mode(1,5000,Target_1);
 	CAN_RoboModule_DRV_Velocity_Mode(2,5000,Target_2);
 	CAN_RoboModule_DRV_Velocity_Mode(3,5000,Target_3);
 }	 				
-
-
-void move(int32_t target_1,int32_t target_2,int32_t target_3,int16_t tt)
-{
- 	int32_t V1=0,V2=0,V3=0;
-	static  int32_t Len_Sum1=0,Len_Sum2=0,Len_Sum3=0;
-	
-	V1=target_1/tt;
-	V2=target_2/tt; 
-	V3=target_3/tt;
-//  	PRINTF("V1:      %d \r\n",V1);  
-//		PRINTF("V2:      %d \r\n",V2);  
-//		PRINTF("V3:      %d \r\n",V3);  
-	
-	Len_Sum1+=target_1;
-	Len_Sum2+=target_2;
-	Len_Sum3+=target_3;
-	
-		CAN_RoboModule_DRV_Velocity_Position_Mode(1,5000,V1,Len_Sum1);
-		//delay_ms(200);
-		CAN_RoboModule_DRV_Velocity_Position_Mode(2,5000,V2,Len_Sum2);
-		//delay_ms(200);
-		CAN_RoboModule_DRV_Velocity_Position_Mode(3,5000,V3,Len_Sum3);
-		//delay_ms(200);
-
-
-
-//						PRINTF("V1:      %d \r\n",V1);  
-//						PRINTF("V2:      %d \r\n",V2);  
-//						PRINTF("V3:      %d \r\n",V3); 
-//						
-//						PRINTF("Len_Sum1:      %d \r\n",Len_Sum1);  
-//						PRINTF("Len_Sum2:      %d \r\n",Len_Sum2);  
-//						PRINTF("Len_Sum3:      %d \r\n",Len_Sum3); 	
-}
 
 void aaa(float x,float y)
 {
@@ -145,47 +105,52 @@ void aaa(float x,float y)
 		
 		err_x=x-wd_x ;               
 		ln_err_x+=index*err_x;
-		dX=kd*err_x+ki*index*ln_err_x+kd*(err_x-l_err_x);
+		dX=kp*err_x+ki*index*ln_err_x+kd*(err_x-l_err_x);
 		l_err_x=err_x;
 		
 		err_y=y-wd_y;               
 		ln_err_y+=index*err_y;		
-		dY=kd*err_y+ki*index*ln_err_y+kd*(err_y-l_err_y);		
+		dY=kp*err_y+ki*index*ln_err_y+kd*(err_y-l_err_y);		
 		l_err_y=err_y;
 
 	    vx=dX;
 		vy=dY;
 		delay_ms(2);
-//		PRINTF("\r\n");
-//		PRINTF("err_x= %f \r\n",err_x);
-//		PRINTF("ln_err_x= %f \r\n",ln_err_x);
-//		PRINTF("dX= %f \r\n",dX);
-//		PRINTF("ln_err_y= %f \r\n",ln_err_y);
-//		PRINTF("dY= %f \r\n", dY);
-//		PRINTF("vz= %f \r\n", vz);
-//		PRINTF("\r\n");
 }
 
-//void bbb(float z)
-//{
-//	static float err_z=0,l_err_z=0,ln_err_z=0,dZ=0,index,
-//	kp1=5.25,
-//	ki1=0.015,
-//	kd1=0.2;
-//	if(abs(err_z)>200.0)
-//		{
-//			index=0.0;
-//		}
-//	else if(abs(err_z)<5.0)
-//		{
-//			index=1.0;
-//		}
-
-//	err_z=z-zangle  ;               
-//	ln_err_z+=index*err_z;
-//	dZ=kd1*err_z+ki1*index*ln_err_z+kd1*(err_z-l_err_z);
-//	l_err_z=err_z;
-//}
+void bbb(float x,float y)
+{
+	static float dx=0,dy=0;
+	dx=x-wd_x;
+	dy=y-wd_y;
+	
+	gear=1500;
+	vx=dx;
+	vy=dy;
+	if((abs(dx)<200.0)&&(abs(dy)<200.0))
+	{
+		gear=500;
+	}
+		if((abs(dx)<50.0)&&(abs(dy)<50.0))
+	{
+		gear=300;
+	}
+	switch((threshould_x(wd_x,x)*1)+(threshould_y(wd_y,y)*2))
+	{
+		case 1:
+			vx=0;
+			break;
+		case 2:
+			vy=0;
+			break;
+		case 3:
+			vx=0;
+			vy=0;
+			break;
+	}
+	delay_ms(1);
+			
+}
 
 /**************************************************************************
 函数功能：绝对值函数
@@ -198,4 +163,35 @@ uint32_t myabs(long int a)
 		if(a<0)  temp=-a;  
 	  else temp=a;
 	  return temp;
+}
+
+void oponeD(void)
+{
+	dja[2]=0;
+    LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
+}
+void optwoD(void)
+{
+	dja[3]=0;
+	LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
+}
+void opthrD(void)
+{
+	dja[4]=0;
+	LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
+}
+void cloneD(void)
+{
+	dja[2]=1;
+	LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
+}
+void cltwoD(void)
+{
+	dja[3]=1;
+	LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
+}
+void clthrD(void)
+{
+	dja[4]=1;
+	LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
 }
