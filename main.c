@@ -13,6 +13,7 @@
 #include "math.h"
 #include "bsp_led.h"
 #include "bsp_key_it.h"
+#include "bsp_red.h"
 /*******************************************************************
  * Prototypes
  *******************************************************************/
@@ -22,6 +23,7 @@
  #define threshould_s(a,b)  ((a>b-50)&&(a<b+50)) 
  void yigedunzi(void);
  void lianggedunzi(void);
+ void END_node(void);
 	uint8_t res,rxff=0;
 	extern uint8_t key;
 	extern uint8_t lpuartrx[8];
@@ -31,10 +33,10 @@
 	uint32_t now_time=0;
 	uint32_t bk_tim=700;
 	uint8_t dog1=0,dog2=0,dog3=0;
-	uint16_t gear0=1000;
+	uint16_t gear0=2000;
 	float vx,vy,vz;
 	float vx_o=0,vy_o=0,vz_o=0;
-	
+	extern uint32_t mm1,mm2;
 	extern float pos_x;
 	extern float pos_y;
 	extern float zangle;
@@ -42,15 +44,18 @@
 	extern float yangle;
 	extern float w_z;
 	extern float wd_x,wd_y;
+	
+	extern uint8_t key1,key2,key3;
 	float d_z;
 	extern uint8_t rxflag,rxflag1,data;
 	uint8_t once=1,twice=1,thrice=1,back=1;
 	float px,py,pz;
-	static float
-		  DST_X[30]={ -1467   , -2353.0 , -3730.0 , -4093.0 ,-2841.0 ,-2979.0  ,	-1460,	  -455,	 1561,	 1265, 1997,  802,   49},
-		  DST_Y[30]={ -307.0  ,  236.0  ,  1285.0 ,  2376.0 , 2063.0 ,  1911.0 ,      451,	  2508,  2737,	 3000, 4071, 5714,5141,},
-		  DST_Z[30]={    0    ,    53.0 ,    53  ,  138.0  , 138.0  ,  138.0   ,	-137 ,	 -26  ,   170,    168,  168, -120, -120};
-	static int32_t 
+	float
+		  DST_X[30]={ -1486  , -2397.0 , -3694.0 , -4119.0 ,-2644.0 , -2993.0 , -1390.0, -458.0,  1550, 1162, 2010,  -70 },
+		  DST_Y[30]={ -148.0 ,   464.0 ,  1479.0 ,  2590.0 , 2492.0 ,  2109.0 ,   717.0, 2801.0,  2644, 3263, 5620, 5374},
+		  DST_Z[30]={    0   ,    53.5 ,    53.5 ,  -101.0 , 137.2  ,  137.2  ,  -143.0, -136.0, -79.7, -79.7,  99 ,  98 };
+		  //XMDZ[2][10] ={{},{}};
+	int32_t
 		  DST_H[30]={    0    ,    0    ,    0    ,  150000 , 9000 ,  -24 },
 		  DST_S[30]={    0    ,    0    ,    0    ,  0 , 3000 ,  3000 };
 /*******************************************************************
@@ -84,27 +89,48 @@ int main(void)
 	Key_IT_GPIO_Config();
 	LED_GPIO_Config();
 	PIT_CH0_Int_Init(500);
+	red_gpio_init();
 //		delay_ms(500);	
-	my_canInit();
-	
+//	my_canInit();
+	//舵机
 	hha[2]=0;
 	hha[3]=0;
 	hha[4]=0;
 	LPUART_WriteBlocking(LPUART3, hha, sizeof(hha));
-	PIT_StartTimer(PIT,kPIT_Chnl_1);        //打开PIT
+	
     while(1) 
     {
+			
+			if(key1==1)
+			{
+				PRINTF("t0.txt=\"%d\"",key1 );
+				END_SEND();
+			}
+			
+			if(key2==1)
+			{
+				PRINTF("t1.txt=\"%d\"",key2 );
+				END_SEND();
+			}
+			
+			if(key3==1)
+			{
+				PRINTF("t2.txt=\"%d\"",key3 );
+				END_SEND();
+			}
+			PRINTF("t7.txt=\"%d\"",mm1);
+			END_SEND();
 		if(rxflag)
 		{ 
-			updateWD();
-			PRINTF("t0.txt=\"%f\"",wd_x );
-			END_SEND();
-			PRINTF("t1.txt=\"%f\"",wd_y);
-			END_SEND();
-			PRINTF("t2.txt=\"%f\"",zangle);
-			END_SEND();
-			PRINTF("t7.txt=\"%d\"",run_node);
-			END_SEND();
+			updateWD();		
+//			PRINTF("t0.txt=\"%f\"",wd_x );
+//			END_SEND();
+//			PRINTF("t1.txt=\"%f\"",wd_y);
+//			END_SEND();
+//			PRINTF("t2.txt=\"%f\"",zangle);
+//			END_SEND();
+//			PRINTF("t7.txt=\"%d\"",run_node);
+//			END_SEND();
 //			PRINTF("t8.txt=\"%d\"",back);
 //			END_SEND();
 //			PRINTF("t9.txt=\"%d\"",now_time);
@@ -172,7 +198,28 @@ int main(void)
 			
 			switch(run_node)//开始动作
 			{
-
+				case 3:
+					if(once)
+					{
+						d_z=DST_Z[run_node ]-zangle;
+						if(d_z>0)
+						{
+							if(abs(d_z)>180)
+								vz=-100;
+							else
+								vz=100;
+						}
+						else
+						{
+							if(abs(d_z)>180)
+								vz=100;
+							else
+								vz=-100;
+						}
+						once=0;
+					}
+					if(threshould_z(zangle,DST_Z[run_node]))
+						vz=0;		
 				case 4:
 					if(once)
 					{
@@ -226,13 +273,15 @@ int main(void)
 			{
 				switch(run_node)//暂停动作
 				{
-//					case 1:
-//						cloneD();
-//						break;
-//					case 4:
-//						cltwoD();
-//						delay_ms(200);
-//						break;
+					case 1:
+						cloneD();
+						END_node();
+						break;
+					case 4:
+						cltwoD();
+						delay_ms(200);
+						END_node();
+						break;
 					case 5:
 						//dog1=1;
 						yigedunzi();
@@ -249,10 +298,10 @@ int main(void)
 						//dog2=1;
 						lianggedunzi();
 						break;
-					case 12:
+					case 11:
 						lianggedunzi();
 						break;
-					case 13:
+					case 12:
 						back=0;
 						once=1;
 						twice=1;
@@ -270,7 +319,7 @@ int main(void)
 						break;
 				}
 			}
-			Analysis(vx,vy,vz);
+			//Analysis(vx,vy,vz);
 			rxff=0;
 		}
 	}
@@ -289,12 +338,7 @@ void yigedunzi(void)
 		}
 		else if(threshould_s(sec,now_time + bk_tim))//延时500ms
 		{
-			once=1;
-			twice=1;
-			thrice=1;
-			back=1;
-			dog1=0;
-			run_node++;	
+			END_node();
 		}
 	}//回退一点
 	else
@@ -343,14 +387,7 @@ void lianggedunzi()
 		}
 		else if(threshould_s(sec,now_time + bk_tim))//延时500ms
 		{
-		once=1;
-		twice=1;
-		thrice=1;
-		back=1;
-		dog1=0;
-		dog2=0;
-		dog3=0;
-		run_node++;	
+			END_node();
 		}
 	}//回退一点
 	else
@@ -385,5 +422,18 @@ void lianggedunzi()
 		vz=0;
 	}
 }
+
+void END_node(void)
+{
+	once=1;
+	twice=1;
+	thrice=1;
+	back=1;
+	dog1=0;
+	dog2=0;
+	dog3=0;
+	run_node++;	
+}
+	
 
 /****************************END OF FILE**********************/

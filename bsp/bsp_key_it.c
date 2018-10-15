@@ -26,6 +26,8 @@
 /* 按键是否被按下的中断标志 */
 __IO bool g_KeyDown[2] = { false};
 
+
+uint8_t key1=0,key2=0,key3=0;
 /******************************************************************
  * 宏
   ******************************************************************/
@@ -68,6 +70,12 @@ static void Key_IOMUXC_MUX_Config(void)
   /* 设置按键引脚的复用模式为GPIO，不使用SION功能 */
   IOMUXC_SetPinMux(CORE_BOARD_WAUP_KEY_IOMUXC, 0U);
   IOMUXC_SetPinMux(CORE_BOARD_MODE_KEY_IOMUXC, 0U); 
+	
+//触碰开关	
+	IOMUXC_SetPinMux(
+      IOMUXC_GPIO_B1_11_GPIO2_IO27,         
+      0U);                               
+	IOMUXC_SetPinMux(IOMUXC_GPIO_B0_03_GPIO2_IO03,0U);	
 }
 
 /**
@@ -80,6 +88,11 @@ static void Key_IOMUXC_PAD_Config(void)
   /* 设置按键引脚属性功能 */    
   IOMUXC_SetPinConfig(CORE_BOARD_WAUP_KEY_IOMUXC, KEY_PAD_CONFIG_DATA); 
   IOMUXC_SetPinConfig(CORE_BOARD_MODE_KEY_IOMUXC, KEY_PAD_CONFIG_DATA); 
+	
+	
+	//触碰开关
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_11_GPIO2_IO27,0xF080);
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_03_GPIO2_IO03,0xF080); 
 }
 
  /**
@@ -95,11 +108,19 @@ static void Key_GPIO_Mode_Config(void)
   /** 核心板的按键，GPIO配置 **/       
   key_config.direction = kGPIO_DigitalInput;    //输入模式
   key_config.outputLogic =  1;                  //默认高电平（输入模式时无效）
-  key_config.interruptMode = kGPIO_IntLowLevel; //低电平触发中断
+  key_config.interruptMode = kGPIO_IntRisingEdge; //低电平触发中断
   
   /* 初始化 KEY GPIO. */
   GPIO_PinInit(CORE_BOARD_WAUP_KEY_GPIO, CORE_BOARD_WAUP_KEY_GPIO_PIN, &key_config);
   GPIO_PinInit(CORE_BOARD_MODE_KEY_GPIO, CORE_BOARD_MODE_KEY_GPIO_PIN, &key_config);
+	
+	
+		//触碰开关
+	
+	//key_config.interruptMode = kGPIO_IntFallingEdge;
+
+	GPIO_PinInit(GPIO2, 27U, &key_config);
+	GPIO_PinInit(GPIO2, 3U, &key_config);
 }
 
 
@@ -116,13 +137,20 @@ static void Key_Interrupt_Config(void)
   /* 开启GPIO端口中断 */
   EnableIRQ(CORE_BOARD_WAUP_KEY_IRQ);
   EnableIRQ(CORE_BOARD_MODE_KEY_IRQ);
-  
+	
+	//触碰开关
+	EnableIRQ(GPIO2_Combined_16_31_IRQn);
   /* 开启GPIO端口某个引脚的中断 */
   GPIO_PortEnableInterrupts(CORE_BOARD_WAUP_KEY_GPIO, 
                             1U << CORE_BOARD_WAUP_KEY_GPIO_PIN);  
                             
   GPIO_PortEnableInterrupts(CORE_BOARD_MODE_KEY_GPIO, 
-                            1U << CORE_BOARD_MODE_KEY_GPIO_PIN);  
+                            1U << CORE_BOARD_MODE_KEY_GPIO_PIN);
+
+
+  GPIO_PortEnableInterrupts(GPIO2, 
+                            1U << 27U); 
+	GPIO_PortEnableInterrupts(GPIO2, 1U << 03U);
 }
 
 
@@ -217,4 +245,16 @@ void delay(uint32_t count)
         __asm("NOP"); /* 调用nop空指令 */
     }
 }
+
+void GPIO2_Combined_16_31_IRQHandler(void)
+{
+	if((GPIO_PortGetInterruptFlags(GPIO2)&(1U<<27U))==1U<<27U)
+	{
+		key2=1;
+		GPIO_PortClearInterruptFlags(GPIO2,
+                                 1U << 27U);  
+	}
+}
+
+
 

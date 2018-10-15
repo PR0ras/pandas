@@ -3,20 +3,21 @@
 #include "bsp_flexcan.h"
 #include "fsl_debug_console.h"
 #include "fsl_lpuart.h"
-#define threshould_x(a,b) ((a>b-7)&&(a<b+7))
-#define threshould_y(a,b) ((a>b-7)&&(a<b+7))
+#include "bsp_red.h"
+#define threshould_x(a,b) ((a>b-2)&&(a<b+4))
+#define threshould_y(a,b) ((a>b-2)&&(a<b+4))
 #define X_PARAMETER          (0.5f)               
 #define Y_PARAMETER           (sqrt(3)/2.f)      
 #define L_PARAMETER           (1364.0f)  
 #define Kxy_mm                (217.2996f)
 #define k_Vz									(20.38f)//(13.66f)
- 
+extern uint32_t mm;	 
 extern  float ax,ay,rx,ry,juli,jdc;
 extern float pos_x;
 extern float pos_y;
 extern float zangle;
 extern float vx,vy,vz;
-extern uint16_t gear0;
+extern uint16_t gear0,run_node;
 uint16_t gear=0;
 float wd1_x=0.0,wd1_y=0.0,kx=129.8,bx=0.0,ky=-129.9,by=130.0,wd_x=0,wd_y=0;
 uint8_t Flag_Target,Flag_Change;                             //相关标志位
@@ -124,14 +125,22 @@ void bbb(float x,float y)
 	dx=x-wd_x;
 	dy=y-wd_y;
 	
-	gear=1500;
+	gear=gear0;
 	vx=dx;
 	vy=dy;
+//	switch(run_node)
+//	{
+//		case 
+//	}
 	if((abs(dx)<200.0)&&(abs(dy)<200.0))
+	{
+		gear=gear0*0.8;
+	}
+	 if((abs(dx)<50.0)&&(abs(dy)<50.0))
 	{
 		gear=500;
 	}
-		if((abs(dx)<50.0)&&(abs(dy)<50.0))
+		if((abs(dx)<25.0)&&(abs(dy)<25.0))
 	{
 		gear=300;
 	}
@@ -148,7 +157,7 @@ void bbb(float x,float y)
 			vy=0;
 			break;
 	}
-	delay_ms(1);
+	//delay_ms(1);
 			
 }
 
