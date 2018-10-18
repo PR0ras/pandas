@@ -2,6 +2,7 @@
 #include "arm_math.h"
 #include "bsp_flexcan.h"
 #include "fsl_debug_console.h"
+#include "bsp_uart.h"
 #include "fsl_lpuart.h"
 #include "bsp_red.h"
 #define threshould_x(a,b) ((a>b-2)&&(a<b+4))
@@ -16,7 +17,8 @@ extern  float ax,ay,rx,ry,juli,jdc;
 extern float pos_x;
 extern float pos_y;
 extern float zangle;
-extern float vx,vy,vz,gear0;
+extern float vx,vy,vz,gear0,DST_Z[30];
+extern uint8_t dog1,dog2,dog3;
 extern uint16_t run_node;
 float gear=0.0;
 float wd1_x=0.0,wd1_y=0.0,kx=129.8,bx=0.0,ky=-129.9,by=130.0,wd_x=0,wd_y=0;
@@ -26,6 +28,7 @@ float Voltage_Count,Voltage_All;  //电压采样相关变量
 float Gyro_K=0.004;       //陀螺仪比例系数
 extern uint16_t run_node;
 extern uint32_t mm1,mm2;
+float DIST_X=0,DIST_Y=0;
 void updateWD(void)
 {
 //	wd_x=pos_x-(arm_sin_f32(zangle*PI/180)*kx+bx);
@@ -40,7 +43,7 @@ void updateWD(void)
 **************************************************************************/
 void Analysis(float Vx,float Vy,float Vz)
 {
-	float rad=zangle*PI/180;
+	float rad=zangle*PI/180.0f;
 	static float Lx=0,Ly=0,Lz=0,dx=0,dy=0,Vx1,Vy1;
 	static	int32_t Target_1=0,Target_2=0,Target_3=0;
 	//Vx、Vy距离，Vx1、Vy1根据gear所得速度
@@ -137,22 +140,23 @@ void bbb(float x,float y)
 	static float dx=0,dy=0;
 	dx=x-wd_x;
 	dy=y-wd_y;
-	
+	DIST_X=x;
+	DIST_Y=y;
 	gear=gear0;
 	vx=dx;
 	vy=dy;
 
-	if((abs(dx)<300.0)&&(abs(dy)<200.0))
+	if((abs(dx)<400.0)||(abs(dy)<300.0))
 	{
-		gear=gear0*0.8;
+		gear=gear0*0.8f;
 	}
-	 if((abs(dx)<100.0)&&(abs(dy)<100.0))
+	 if((abs(dx)<250.0)||(abs(dy)<150.0))
+	{
+		gear=gear0*0.5;
+	}
+		if((abs(dx)<50.0)&&(abs(dy)<50.0))
 	{
 		gear=500;
-	}
-		if((abs(dx)<25.0)&&(abs(dy)<25.0))
-	{
-		gear=300;
 	}
 		switch(run_node)
 	{
@@ -182,17 +186,21 @@ void bbb(float x,float y)
 			vy=0;
 			break;
 	}
+	__DSB();
 	//delay_ms(1);
 			
 }
-void WFJian(float Vy,float Vz)
+void WFJian(float fi,float Vz)
 {
+	float rad=fi*PI/180.0f; 
 	float Lx=0,Ly=0,Lz=0,dx=0,dy=0,Vx1,Vy1;
+	Lx=1000;
+	Ly=1000;
 	static	int32_t WTarget_1=0,WTarget_2=0,WTarget_3=0;
 	
-	WTarget_1   = (int32_t)(Lx + k_Vz*Vz);//+gyroz*Gyro_K;
-	WTarget_2   = (int32_t)(-X_PARAMETER*Lx + Y_PARAMETER*Ly + k_Vz*Vz);//+gyroz*Gyro_K;
-	WTarget_3   = (int32_t)(-X_PARAMETER*Lx - Y_PARAMETER*Ly + k_Vz*Vz);//+gyroz*Gyro_K;
+	WTarget_1   = (int32_t)(Lx*arm_cos_f32(rad) + k_Vz*Vz);//+gyroz*Gyro_K;
+	WTarget_2   = (int32_t)(-X_PARAMETER*Lx*arm_cos_f32(rad) + Y_PARAMETER*Ly*arm_sin_f32(rad) + k_Vz*Vz);//+gyroz*Gyro_K;
+	WTarget_3   = (int32_t)(-X_PARAMETER*Lx*arm_sin_f32(rad) - Y_PARAMETER*Ly*arm_cos_f32(rad) + k_Vz*Vz);//+gyroz*Gyro_K;
 
 	CAN_RoboModule_DRV_Velocity_Mode(1,5000,WTarget_1);
 	CAN_RoboModule_DRV_Velocity_Mode(2,5000,WTarget_2);
@@ -240,4 +248,60 @@ void clthrD(void)
 {
 	dja[4]=1;
 	LPUART_WriteBlocking(LPUART3, dja, sizeof(dja));
+}
+void angleAnalysis(uint8_t hand)
+{
+	static float Xtmp=0,Ytmp=0,Ztmp=0,zangle1=0,mmp=0;
+	Xtmp=DIST_X-wd_x;
+	Ytmp=DIST_Y-wd_y; 
+	Ztmp=0;
+	if(Ytmp<0)
+		Ztmp=180;
+	zangle1=-((atan(Xtmp/Ytmp)/PI)*180+Ztmp);
+	
+	if(zangle1>180.0f)
+		zangle1-=360;
+	if(zangle1<-180.0f)
+		zangle1+=360;
+//	PRINTF("t7.txt=\"%d\"",run_node);
+//	END_SEND();
+//	PRINTF("t8.txt=\"%f\"",zangle1);
+//	END_SEND();
+
+	
+	switch(hand)
+	{
+		case 1:
+			dog1=1;
+			mmp=zangle1+120.0f;
+			if(mmp>180.0f)
+				mmp-=360;
+			if(mmp<-180.0f)
+				mmp+=360;
+			break;
+		case 2:
+			dog2=1;
+			mmp=zangle1 - 120.0f;
+			if(mmp>180.0f)
+			
+			mmp-=360;
+			if(mmp<-180.0f)
+				mmp+=360;
+			break;
+		case 3:
+			dog3=1;
+			mmp=zangle1;
+			if(mmp>180.0f)
+				mmp-=360;
+			if(mmp<-180.0f)
+				mmp+=360;
+			break;
+	}	
+	DST_Z[run_node]=mmp;
+	__DSB();
+//	PRINTF("t9.txt=\"%f\"",mmp);
+//	END_SEND();
+//	PRINTF("t10.txt=\"%f\"",DST_Z[run_node]);
+//	END_SEND();
+	
 }

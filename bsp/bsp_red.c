@@ -104,7 +104,7 @@ void GPIO2_Combined_0_15_IRQHandler()
 		GPIO_PortClearInterruptFlags(GPIO2,
 																1U << 7U);
 	}
-	
+	__DSB();
 	
 //	//´¥Åö¿ª¹Ø
 //		if((GPIO_PortGetInterruptFlags(GPIO2)&(1U<<3U))==1U<<3U)

@@ -3,7 +3,7 @@
 
 #include "fsl_common.h"
 
-void red_gpio_init();
+void red_gpio_init(void);
 
 void RED_IRQHandler(void);
 	

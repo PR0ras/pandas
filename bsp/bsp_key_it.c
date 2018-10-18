@@ -64,7 +64,7 @@ static void Key_GPIO_Mode_Config(void);
 * @retval 无
 */
 
-void touch_key_init()
+void touch_key_init(void)
 {
 	gpio_pin_config_t key_config;
 	//触碰开关	
@@ -172,6 +172,7 @@ void Key_IT_GPIO_Config(void)
   /* 初始化GPIO复用、属性、模式及中断*/
   Key_IOMUXC_MUX_Config();
   Key_IOMUXC_PAD_Config();
+  touch_key_init();
   Key_GPIO_Mode_Config();
   Key_Interrupt_Config();
 }

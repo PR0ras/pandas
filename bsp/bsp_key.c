@@ -48,7 +48,7 @@ void delay_ms(uint32_t count)
     static  uint32_t i = 0;
 		uint32_t j=0;
 		for(j=0;j<100000;++j)
-			for (i = 0; i < count; ++i)
+			for (i = 0; i < count; i++)
 			{			
 					__asm("NOP"); /* µ÷ÓÃnop¿ÕÖ¸Áî */
 			}

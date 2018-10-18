@@ -37,6 +37,6 @@ void delay(uint32_t count);
 void Key_IT_GPIO_Config(void);
 
 
-void touch_key_init();
+void touch_key_init(void);
 #endif /* __BSP_KEY_IT_H */
 

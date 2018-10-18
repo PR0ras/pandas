@@ -15,7 +15,7 @@
 
 void CAN1_Configuration(void);
 
-void my_canInit();
+void my_canInit(void);
 void CAN_RoboModule_DRV_Reset(uint8_t Number);
 void CAN_RoboModule_DRV_Mode_Choice(uint8_t Number,uint8_t Mode);
 void CAN_RoboModule_DRV_OpenLoop_Mode(uint8_t Number,short Temp_PWM);
