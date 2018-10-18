@@ -7,7 +7,6 @@
 
 extern uint32_t umsec1,umsec2,umsec3;
 uint32_t mm1=0,mm2=0;
-extern uint8_t key1;
 static void RED_IOMUXC_PAD_Config(void)
 {
   IOMUXC_SetPinMux(
@@ -107,13 +106,13 @@ void GPIO2_Combined_0_15_IRQHandler()
 	}
 	
 	
-	//触碰开关
-		if((GPIO_PortGetInterruptFlags(GPIO2)&(1U<<3U))==1U<<3U)
-	{
-		key1=1;
-		GPIO_PortClearInterruptFlags(GPIO2,
-																	1U << 3U);
-	}
+//	//触碰开关
+//		if((GPIO_PortGetInterruptFlags(GPIO2)&(1U<<3U))==1U<<3U)
+//	{
+//		key1=2;
+//		
+//		GPIO_PortClearInterruptFlags(GPIO2,1U << 3U);
+//	}
 
 }
 

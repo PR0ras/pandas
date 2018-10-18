@@ -90,7 +90,7 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinMux(
       IOMUXC_GPIO_B1_13_LPUART5_RX,       /* GPIO_SD_B1_03 is configured as FLEXCAN1_RX */
       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
-		IOMUXC_SetPinMux(
+  IOMUXC_SetPinMux(
       IOMUXC_GPIO_B0_08_LPUART3_TX,       /* GPIO_SD_B1_02 is configured as FLEXCAN1_TX */
       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
   IOMUXC_SetPinMux(
@@ -131,8 +131,8 @@ IOMUXC_SetPinConfig(
       IOMUXC_GPIO_AD_B0_15_FLEXCAN2_RX,       
       0x10B0u); 
 
-	//IOMUXC->SELECT_INPUT[85]=1;
-	//IOMUXC->SELECT_INPUT[86]=1;
+	IOMUXC->SELECT_INPUT[kIOMUXC_LPUART3_RX_SELECT_INPUT]=2;
+	IOMUXC->SELECT_INPUT[kIOMUXC_LPUART3_RX_SELECT_INPUT]=2;
 }
 
 /***********************************************************************************************************************

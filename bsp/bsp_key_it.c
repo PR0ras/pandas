@@ -24,10 +24,8 @@
  * 变量定义
   ******************************************************************/
 /* 按键是否被按下的中断标志 */
-__IO bool g_KeyDown[2] = { false};
-
-
-uint8_t key1=0,key2=0,key3=0;
+__IO bool g_KeyDown[2] = {false,false};
+uint8_t key=0;
 /******************************************************************
  * 宏
   ******************************************************************/
@@ -65,17 +63,33 @@ static void Key_GPIO_Mode_Config(void);
 * @param  无
 * @retval 无
 */
+
+void touch_key_init()
+{
+	gpio_pin_config_t key_config;
+	//触碰开关	
+	IOMUXC_SetPinMux(IOMUXC_GPIO_B1_11_GPIO2_IO27,0U);                               
+	IOMUXC_SetPinMux(IOMUXC_GPIO_B0_03_GPIO2_IO03,0U);	
+
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_11_GPIO2_IO27,0xF080);
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_03_GPIO2_IO03,0xF080); 
+	
+	key_config.direction = kGPIO_DigitalInput; //输入模式
+	key_config.outputLogic =  1;                //默认高电平（输入模式时无效）
+	key_config.interruptMode = kGPIO_NoIntmode; //不使用中断
+	
+	GPIO_PinInit(GPIO2, 27U, &key_config);
+	GPIO_PinInit(GPIO2, 3U, &key_config);
+}
+
+
 static void Key_IOMUXC_MUX_Config(void)
 {
   /* 设置按键引脚的复用模式为GPIO，不使用SION功能 */
   IOMUXC_SetPinMux(CORE_BOARD_WAUP_KEY_IOMUXC, 0U);
   IOMUXC_SetPinMux(CORE_BOARD_MODE_KEY_IOMUXC, 0U); 
 	
-//触碰开关	
-	IOMUXC_SetPinMux(
-      IOMUXC_GPIO_B1_11_GPIO2_IO27,         
-      0U);                               
-	IOMUXC_SetPinMux(IOMUXC_GPIO_B0_03_GPIO2_IO03,0U);	
+
 }
 
 /**
@@ -90,9 +104,7 @@ static void Key_IOMUXC_PAD_Config(void)
   IOMUXC_SetPinConfig(CORE_BOARD_MODE_KEY_IOMUXC, KEY_PAD_CONFIG_DATA); 
 	
 	
-	//触碰开关
-	IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_11_GPIO2_IO27,0xF080);
-	IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_03_GPIO2_IO03,0xF080); 
+
 }
 
  /**
@@ -115,12 +127,8 @@ static void Key_GPIO_Mode_Config(void)
   GPIO_PinInit(CORE_BOARD_MODE_KEY_GPIO, CORE_BOARD_MODE_KEY_GPIO_PIN, &key_config);
 	
 	
-		//触碰开关
-	
-	//key_config.interruptMode = kGPIO_IntFallingEdge;
 
-	GPIO_PinInit(GPIO2, 27U, &key_config);
-	GPIO_PinInit(GPIO2, 3U, &key_config);
+
 }
 
 
@@ -148,9 +156,9 @@ static void Key_Interrupt_Config(void)
                             1U << CORE_BOARD_MODE_KEY_GPIO_PIN);
 
 
-  GPIO_PortEnableInterrupts(GPIO2, 
-                            1U << 27U); 
-	GPIO_PortEnableInterrupts(GPIO2, 1U << 03U);
+//  GPIO_PortEnableInterrupts(GPIO2, 
+//                            1U << 27U); 
+//  GPIO_PortEnableInterrupts(GPIO2, 1U << 03U);
 }
 
 
@@ -187,8 +195,8 @@ void CORE_BOARD_WAUP_KEY_IRQHandler(void)
                                  1U << CORE_BOARD_WAUP_KEY_GPIO_PIN);  
   
     /* 设置按键中断标志 */
-    g_KeyDown[CORE_BOARD_WAUP_KEY_ID] = true;
-  
+    //g_KeyDown[CORE_BOARD_WAUP_KEY_ID] = true;
+	key=1;
     /* 以下部分是为 ARM 的勘误838869添加的, 
        该错误影响 Cortex-M4, Cortex-M4F内核，       
        立即存储覆盖重叠异常，导致返回操作可能会指向错误的中断
@@ -221,8 +229,8 @@ void CORE_BOARD_MODE_KEY_IRQHandler(void)
                                  1U << CORE_BOARD_MODE_KEY_GPIO_PIN);  
   
     /* 设置按键中断标志 */
-    g_KeyDown[CORE_BOARD_MODE_KEY_ID] = true;
-  
+    //g_KeyDown[CORE_BOARD_MODE_KEY_ID] = true;
+	key=2;
     /* 以下部分是为 ARM 的勘误838869添加的, 
        该错误影响 Cortex-M4, Cortex-M4F内核，       
        立即存储覆盖重叠异常，导致返回操作可能会指向错误的中断
@@ -246,15 +254,15 @@ void delay(uint32_t count)
     }
 }
 
-void GPIO2_Combined_16_31_IRQHandler(void)
-{
-	if((GPIO_PortGetInterruptFlags(GPIO2)&(1U<<27U))==1U<<27U)
-	{
-		key2=1;
-		GPIO_PortClearInterruptFlags(GPIO2,
-                                 1U << 27U);  
-	}
-}
+//void GPIO2_Combined_16_31_IRQHandler(void)
+//{
+//	if((GPIO_PortGetInterruptFlags(GPIO2)&(1U<<27U))==1U<<27U)
+//	{
+//		key1=1;
+//		GPIO_PortClearInterruptFlags(GPIO2,
+//                                 1U << 27U);  
+//	}
+//}
 
 
 
